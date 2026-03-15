@@ -19,5 +19,5 @@ package() {
 	install -dm755 "$pkgdir/usr/share/applications"
 	install -m644 "netease-cloud-music-web-player.desktop" "$pkgdir/usr/share/applications/"
 	install -dm755 "$pkgdir/usr/share/icons/hicolor/scalable/apps"
-	install -m644 "netease-cloud-music.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/$pkgname.svg"
+	install -m644 "netease-cloud-music.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/netease-cloud-music.svg"
 }
