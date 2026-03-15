@@ -12,6 +12,9 @@ const WindowManager = require('./modules/WindowManager');
 const TrayManager = require('./modules/TrayManager');
 const logger = require('./utils/logger');
 
+// 设置主进程日志模块名称
+logger.setModule('Main');
+
 // 全局错误处理
 process.on('uncaughtException', (error) => {
   logger.error('未捕获的异常:', error.message);
@@ -100,6 +103,8 @@ function cleanup() {
     }
 
     logger.info('应用清理完成');
+    // 关闭日志文件流
+    logger.close();
   } catch (error) {
     logger.error('应用清理失败:', error.message);
   }
@@ -111,6 +116,13 @@ app.whenReady().then(() => {
   // 解析命令行参数并初始化应用
   const options = parseCommandLineArgs();
   initializeApp(options);
+});
+
+app.on('window-all-closed', () => {
+  logger.info('所有窗口已关闭');
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 });
 
 app.on('before-quit', () => {

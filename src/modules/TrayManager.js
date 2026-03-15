@@ -1,4 +1,4 @@
-const { Tray, Menu, nativeImage } = require('electron');
+const { Tray, Menu, nativeImage, shell } = require('electron');
 const fs = require('fs');
 const logger = require('../utils/logger');
 const config = require('../config/default');
@@ -7,6 +7,8 @@ class TrayManager {
   constructor(windowManager) {
     this.tray = null;
     this.windowManager = windowManager;
+    // 设置日志模块名称
+    logger.setModule('TrayManager');
   }
 
   // 加载托盘图标
@@ -48,6 +50,11 @@ class TrayManager {
         this.handleTrayClick();
       });
 
+      // 绑定右键点击事件
+      this.tray.on('right-click', () => {
+        logger.debug('托盘右键菜单显示');
+      });
+
       logger.info('系统托盘事件绑定完成');
     } catch (error) {
       logger.error('创建系统托盘失败:', error.message);
@@ -76,6 +83,14 @@ class TrayManager {
       },
       { type: 'separator' },
       {
+        label: '查看日志目录',
+        click: () => {
+          logger.debug('托盘菜单：查看日志目录');
+          this.openLogDirectory();
+        }
+      },
+      { type: 'separator' },
+      {
         label: '退出',
         click: () => {
           logger.info('用户通过托盘菜单退出应用');
@@ -87,6 +102,28 @@ class TrayManager {
 
     this.tray.setContextMenu(contextMenu);
     logger.debug('托盘右键菜单已创建');
+  }
+
+  // 打开日志目录
+  openLogDirectory() {
+    try {
+      const logDir = config.logger.logDir;
+
+      // 确保日志目录存在
+      if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true });
+        logger.info(`创建日志目录: ${logDir}`);
+      }
+
+      // 打开目录
+      shell.openPath(logDir).then(() => {
+        logger.debug(`已打开日志目录: ${logDir}`);
+      }).catch(error => {
+        logger.error(`打开日志目录失败: ${error.message}`);
+      });
+    } catch (error) {
+      logger.error(`处理日志目录打开请求失败: ${error.message}`);
+    }
   }
 
   // 处理托盘点击事件

@@ -9,6 +9,8 @@ class WindowManager {
   constructor() {
     this.mainWindow = null;
     this.isQuiting = false;
+    // 设置日志模块名称
+    logger.setModule('WindowManager');
   }
 
   // 加载窗口状态
@@ -115,6 +117,32 @@ class WindowManager {
       this.mainWindow.on('moved', () => this.saveWindowState());
       this.mainWindow.on('resized', () => this.saveWindowState());
 
+      // 窗口状态变化事件监听
+      this.mainWindow.on('minimize', () => logger.debug('窗口已最小化'));
+      this.mainWindow.on('maximize', () => logger.debug('窗口已最大化'));
+      this.mainWindow.on('unmaximize', () => logger.debug('窗口已还原'));
+      this.mainWindow.on('focus', () => logger.debug('窗口获得焦点'));
+      this.mainWindow.on('blur', () => logger.debug('窗口失去焦点'));
+
+      // 页面加载事件监听
+      this.mainWindow.webContents.on('did-start-loading', () => logger.debug('页面开始加载'));
+      this.mainWindow.webContents.on('did-finish-load', () => logger.debug('页面加载完成'));
+      this.mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+        logger.error(`页面加载失败: ${errorCode} - ${errorDescription}`);
+      });
+
+      // URL变化追踪
+      this.mainWindow.webContents.on('did-navigate', (event, url) => {
+        logger.info(`页面导航完成: ${url}`);
+      });
+
+      this.mainWindow.webContents.on('did-navigate-in-page', (event, url, isMainFrame) => {
+        if (isMainFrame) {
+          logger.debug(`页面内导航: ${url}`);
+        }
+      });
+
+
       // 处理新窗口打开事件
       this.mainWindow.webContents.setWindowOpenHandler(({ url }) => {
         try {
@@ -135,6 +163,7 @@ class WindowManager {
 
       // 处理页面内链接点击
       this.mainWindow.webContents.on('will-navigate', (event, url) => {
+        logger.debug(`即将导航到: ${url}`);
         const currentUrl = this.mainWindow.webContents.getURL();
         // 如果链接与当前页面相同，允许导航（正常页面跳转）
         if (url === currentUrl) {

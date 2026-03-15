@@ -28,7 +28,11 @@ const config = {
   logger: {
     level: 'info', // error, warn, info, debug
     console: true,
-    file: false // 不写入文件，保持简单
+    file: true, // 启用文件输出
+    fileName: 'app.log',
+    logDir: path.join(app.getPath('userData'), 'logs'),
+    maxSize: 10 * 1024 * 1024, // 10MB日志轮转
+    maxFiles: 5 // 保留5个旧日志文件
   },
 
   // 托盘配置
